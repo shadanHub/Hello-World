@@ -2,7 +2,6 @@
                 var $trpmc = $("#TRPBH${idSuffix}");
                 $trpmc.combogrid("option", "onChange", function (e, data) {
                     //获得当前的下拉列表中的是
-                    debugger
                     var bzggdata = $.loadJson($.contextPath + "/zztrpcglb!searchBzggData.json?trpbh=" + data.value);
                     if($('#TRPLX${idSuffix}').combobox('getValue')!='NJJ'){
                         $('#BZGG${idSuffix}').textbox('setValue',bzggdata.BZGG);
