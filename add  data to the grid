@@ -1,0 +1,21 @@
+//add  data to the grid
+                var $trpmc = $("#TRPBH${idSuffix}");
+                $trpmc.combogrid("option", "onChange", function (e, data) {
+                    //获得当前的下拉列表中的是
+                    debugger
+                    var bzggdata = $.loadJson($.contextPath + "/zztrpcglb!searchBzggData.json?trpbh=" + data.value);
+                    if($('#TRPLX${idSuffix}').combobox('getValue')!='NJJ'){
+                        $('#BZGG${idSuffix}').textbox('setValue',bzggdata.BZGG);
+                        $('#BZGGDW${idSuffix}').combobox('setValue',bzggdata.BZGGDW);
+                    }
+
+
+                    var grid = $trpmc.combogrid("grid");
+                    var selectedRowId = grid.grid("option", "selrow");
+                    var rowData = grid.grid("getRowData", selectedRowId);
+                    //$("#BZGG${idSuffix}").textbox("setValue", rowData.BZGG);
+
+                    $("#TRPBH${idSuffix}").combogrid("setValue", data.value);
+                    $("#TRPMC${idSuffix}").textbox("setValue", data.text);
+                    $("#TYM${idSuffix}").textbox("setValue",rowData.TYM);
+                    $("#NCQ${idSuffix}").textbox("setValue", rowData.AQQ);
