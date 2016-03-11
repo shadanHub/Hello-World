@@ -1,0 +1,78 @@
+//自定义验证表单提交
+$("#zzfwForm${idSuffix}").append(html);
+				$("[id^=incrementServiceInput]").textbox({
+					type: "text",
+					value: "0",
+					width : 320,
+					maxlength: 10,
+					pattern:'//^([1-9]+(\.[0-9]+[1-9])?)|([0]+(\.([0-9]+)?[1-9]))$//',
+					errMsg:'请输入非负浮点数'
+				});
+				$.get($.contextPath + "/qyptzzfw!getIncrementServiceById.json?uuid=" + $.ns('namespaceId${idSuffix}').rowId, function (fdata) {
+					for (var i in fdata) {
+						var zzfwbh = fdata[i].ZZFWBH;
+						var zzfwz = fdata[i].ZZFWZ;
+						$("#incrementServiceInput" + zzfwbh + "${idSuffix}").textbox("setValue", zzfwz);
+					}
+				});
+			});
+		},
+		formToolbarClick: function (e, ui) {
+			var configInfo = $("#maxDiv${idSuffix}").data('configInfo');
+			if (ui.id == "close") {//关闭
+				configInfo.dialog.dialog("close");
+			} else if (ui.id == "saveAndClose") {//保存并关闭
+				var flag = $.ns('namespaceId${idSuffix}').f_save();
+				if (flag == true) {
+					configInfo.dialog.dialog("close");
+				}
+			}
+		},
+		f_save : function() {
+			var valid = {flag: false};
+			var flag = false;
+			$("[id^=incrementServiceInput]").each(function () {
+				var value = $(this).textbox("getValue");
+                if (isNaN(value)||value>=0) {
+                    valid.flag = true;
+                }else{
+                    valid.flag = false;
+                }
+			});
+            //判断表单里的值非负
+            if(!$("#zzfwForm${idSuffix}").form("valid")){
+                valid.flag = false;
+            };
+            var services = {};
+			$("[id^=incrementServiceInput]").each(function () {
+				var value = $(this).textbox("getValue");
+				var sid = $(this).attr("name");
+				if (value != "" && value != "0") {
+					services[sid] = value;
+				}
+			});
+			if ($.isEmptyObject(services)) {
+				$.message({message: "请选择需要的增值服务", cls: "warning"});
+				return;
+			}
+            if (!valid.flag ) {
+                $.message({message: "选择的增值服务值无效", cls: "warning"});
+                return;
+            }else{
+                $.ajax({
+                    type: "POST",
+                    url: $.contextPath + "/qyptzzfw!setIncrementService.json",
+                    async : false,
+                    data: {"services": JSON.stringify(services), uuid: $.ns('namespaceId${idSuffix}').rowId},
+                    success: function (data) {
+                        flag = true;
+                        $.message({message: "授予增值服务成功", cls: "success"});
+                    },
+                    error: function (data) {
+                        $.message({message: "授予增值服务失败，请重试或联系技术人员", cls: "danger"});
+                    }
+                });
+            }
+			return flag;
+		}
+	});
