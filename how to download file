@@ -1,0 +1,56 @@
+//at  jsp
+function fileDown(reportId,fileName){
+	fileName=escape(encodeURIComponent(fileName));
+	window.location.href="<%=path%>/stat/report/ReportAnalysis!download.action?fileName="+fileName+"&reportId="+reportId;
+	} 
+//controller
+@Namespace("/stat/report")
+@Action(value = "ReportAnalysis")
+@Results( {
+		@Result(name="download",type="stream",params={"contentType", "application/octet-stream",  "inputName", "inputStream", 
+    			"contentDisposition","attachment;filename=${fileName}","bufferSize","4096" })
+		})
+		
+	/**
+	 * 下载功能  返回"download"自动执行getInputStream方法
+	 * @return
+	 */
+	public String download(){
+		return "download";
+	}
+	/**
+	 * 附件下载
+	 * @return
+	 */
+	public InputStream getInputStream(){
+		UserInfo userInfo = getUserInfo();
+		try {
+			model=reportAnalysisBo.getEntity(userInfo, reportId);
+			inputStream = reportBo.getDownFile(reportId);
+			response.setHeader("Content-Disposition", "attachment;fileName=" + java.net.URLEncoder.encode(fileName,"UTF-8"));
+		} catch (Exception e) {
+			log.info("文件下载异常", e);
+			e.printStackTrace();
+		}
+		return inputStream;
+	}
+	//service
+		/**
+	 * 下载文件
+	 * 
+	 * @param relatedId
+	 *            关联ID
+	 * @return
+	 * @throws Exception
+	 */
+	public InputStream getDownFile(String relatedId) throws Exception {
+		// 通过关联ID得到报告实体
+		ReportEntity report = null;
+		String hsql = "from ReportEntity report where report.relatedId = ?";
+		List<ReportEntity> list = baseDao.findAll(hsql,
+				new Object[] { relatedId }, 0, Integer.MAX_VALUE);
+		if (list != null && list.size() > 0) {
+			report = list.get(0);
+		}
+		return report.getFileContent().getBinaryStream();
+	}
